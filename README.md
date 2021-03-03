@@ -9,6 +9,10 @@
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/15294/badge.svg"/>
 </a>
+## Changes in This Branch
+* SSl speed fix.
+* Scheduling fix when thread is in a callback
+* Integrated Websockets from [an old fork](https://github.com/zerotao/libevhtp/tree/libevhtp2)
 
 ## Required Dependencies
 * [gcc](http://gcc.gnu.org/) or [clang](https://clang.llvm.org/)
