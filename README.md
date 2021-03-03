@@ -9,6 +9,7 @@
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/15294/badge.svg"/>
 </a>
+
 ## Changes in This Branch
 * SSl speed fix.
 * Scheduling fix when thread is in a callback
