@@ -28,7 +28,7 @@ testcb(evhtp_request_t * req, void * a) {
     if(buf && !strncasecmp("bye", (char*)buf, 3))
         disconnect = 1;
 
-    ws_data = evhtp_ws_data_new(buf, evbuffer_get_length(req->buffer_in));
+    ws_data = evhtp_ws_data_new(buf, evbuffer_get_length(req->buffer_in), OP_TEXT);
     outbuf = evhtp_ws_data_pack(ws_data, &outlen);
     free(ws_data);
     resp    = evbuffer_new();
