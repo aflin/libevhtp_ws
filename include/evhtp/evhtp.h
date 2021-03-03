@@ -12,11 +12,15 @@
 #include <evhtp/thread.h>
 #endif
 
+//-ajf connection tracker
+#define EVHTP_VALGRIND_FORK_SAFE 1
+
 #include <evhtp/parser.h>
 
-#ifndef EVHTP_DISABLE_REGEX
-#include <onigposix.h>
-#endif
+/* switched to normal onig calls (instead of the onigposix.h ones) -ajf */
+//#ifndef EVHTP_DISABLE_REGEX
+//#include <onigposix.h>
+//#endif
 
 #include <sys/queue.h>
 #include <event2/event.h>
@@ -130,6 +134,8 @@ enum evhtp_callback_type {
 #ifndef EVHTP_DISABLE_REGEX
     evhtp_callback_type_regex,
 #endif
+    /* added exact match callback */
+    evhtp_callback_type_exact
 };
 
 enum evhtp_proto {
@@ -393,7 +399,7 @@ struct evhtp_path {
                                          *   mainly used for regex matching
                                          */
 };
-
+typedef struct evhtp_ws_parser_s    evhtp_ws_parser;
 
 /**
  * @brief a structure containing all information for a http request.
@@ -415,6 +421,12 @@ struct evhtp_request {
     #define EVHTP_REQ_FLAG_CHUNKED   (1 << 3)
     #define EVHTP_REQ_FLAG_ERROR     (1 << 4)
     uint16_t flags;
+
+    uint8_t           cb_has_websock;
+    uint8_t websock   : 1,
+            pad       : 3 ;
+    uint32_t ws_id;                     /* a counter set id for this websock connection */
+    evhtp_ws_parser * ws_parser;
 
     evhtp_callback_cb cb;               /**< the function to call when fully processed */
     void            * cbarg;            /**< argument which is passed to the cb function */
@@ -457,11 +469,18 @@ struct evhtp_connection {
     uint16_t flags;
 
     struct evbuffer * scratch_buf;                 /**< always zero'd out after used */
-
+#ifdef EVHTP_VALGRIND_FORK_SAFE
+    TAILQ_ENTRY(evhtp_connection) conn_entries; //-ajf connection tracker
+#endif
 #ifdef EVHTP_FUTURE_USE
     TAILQ_HEAD(, evhtp_request) pending;           /**< client pending data */
 #endif
 };
+
+#ifdef EVHTP_VALGRIND_FORK_SAFE
+TAILQ_HEAD(connhead_s, evhtp_connection) conn_head; //-ajf connection tracker
+//void evhtp_free_open_connections(); //-ajf connection tracker
+#endif
 
 struct evhtp_hooks {
     evhtp_hook_headers_start_cb   on_headers_start;
@@ -664,6 +683,21 @@ EVHTP_EXPORT void evhtp_set_post_accept_cb(evhtp_t * htp, evhtp_post_accept_cb, 
  * @return evhtp_callback_t * on success, NULL on error.
  */
 EVHTP_EXPORT evhtp_callback_t * evhtp_set_cb(evhtp_t * htp, const char * path,
+    evhtp_callback_cb cb, void * arg);
+
+/* added exact_cb -ajf */
+
+/**
+ * @brief sets a callback to be executed on a specific path
+ *
+ * @param htp the initialized evhtp_t
+ * @param path the path to match
+ * @param cb the function to be executed
+ * @param arg user-defined argument passed to the callback
+ *
+ * @return evhtp_callback_t * on success, NULL on error.
+ */
+EVHTP_EXPORT evhtp_callback_t * evhtp_set_exact_cb(evhtp_t * htp, const char * path,
     evhtp_callback_cb cb, void * arg);
 
 
@@ -1447,6 +1481,10 @@ EVHTP_EXPORT unsigned int evhtp_request_status(evhtp_request_t *);
         (_var) = NULL;                      \
 }  while (0)
 
+/**
+ * @brief disconnect from websocket client
+ */
+void evhtp_ws_disconnect(evhtp_request_t  * req);
 
 #ifdef __cplusplus
 }

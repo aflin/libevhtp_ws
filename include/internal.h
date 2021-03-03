@@ -9,7 +9,9 @@
 extern "C" {
 #endif
 
+//#define EVHTP_DEBUG 1
 
+#define mempcpy(d,s,n)  memcpy((d),(s),(n)) + n
 #if defined __GNUC__ || defined __llvm__
 #       define evhtp_likely(x)         __builtin_expect(!!(x), 1)
 #       define evhtp_unlikely(x)       __builtin_expect(!!(x), 0)
@@ -25,6 +27,22 @@ extern "C" {
          (var) = (tvar))
 #endif
 
+#ifndef EVHTP_EXPORT
+# if (defined __GNUC__ && __GNUC__ >= 4) || defined __INTEL_COMPILER || defined __clang__
+#  define EVHTP_EXPORT __attribute__ ((visibility("default")))
+# else
+#  define EVHTP_EXPORT
+# endif
+#endif
+
+#ifndef EVHTP_HEX_DIGITS
+#define EVHTP_HEX_DIGITS "0123456789abcdef"
+#endif
+
+#ifndef EVHTP_BIT_ISSET
+#define EVHTP_BIT_ISSET(target, bit) \
+    (((target) & (bit)) ? 1 : 0)
+#endif
 
 #define __FILENAME__          \
     (strrchr(__FILE__, '/') ? \
