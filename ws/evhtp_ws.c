@@ -491,7 +491,6 @@ void evhtp_ws_disconnect(evhtp_request_t  * req)
     {
         if(req->ws_parser->pingev)
         {
-            printf("deleting event in ws_disconnect\n");
             event_del(req->ws_parser->pingev);
             event_free(req->ws_parser->pingev);
         }
