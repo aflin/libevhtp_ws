@@ -11,7 +11,7 @@
 </a>
 
 ## Changes in This Branch
-* SSl speed fix.
+* SSL speed fix.
 * Scheduling fix when thread is in a callback
 * Integrated Websockets from [an old fork](https://github.com/zerotao/libevhtp/tree/libevhtp2)
 
