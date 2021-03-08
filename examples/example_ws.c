@@ -18,25 +18,20 @@ static void refcb(const void *data, size_t datalen, void *val)
 
 void
 testcb(evhtp_request_t * req, void * a) {
-    void *buf = evbuffer_pullup(req->buffer_in, -1);
-    evhtp_ws_data *ws_data;
-    size_t outlen = 0;
-    unsigned char *outbuf;
-    struct evbuffer *resp;
     int disconnect=0;
+    void *buf = evbuffer_pullup(req->buffer_in, -1);
 
     if(buf && !strncasecmp("bye", (char*)buf, 3))
         disconnect = 1;
 
-    ws_data = evhtp_ws_data_new(buf, evbuffer_get_length(req->buffer_in), OP_TEXT);
-    outbuf = evhtp_ws_data_pack(ws_data, &outlen);
-    free(ws_data);
-    resp    = evbuffer_new();
+    /* upon connect, the first request will have headers from the
+       http connect, but no ws data                               */
+    if(!evbuffer_get_length(req->buffer_in))
+        return;
 
-    evbuffer_add_reference(resp, outbuf, outlen, refcb, NULL);
-    evhtp_send_reply_body(req, resp);
-
-    evbuffer_free(resp);
+    /* echo: use buffer_in, prepend proper header and send it back */
+    evhtp_ws_add_header(req->buffer_in, req->ws_opcode);
+    evhtp_send_reply_body(req, req->buffer_in);
 
     if(disconnect)
         evhtp_ws_disconnect(req);
@@ -53,7 +48,7 @@ main(int argc, char ** argv) {
 #endif
     evhtp_bind_socket(htp, "0.0.0.0", 8081, 2048);
 
-    printf("try, e.g. wscat -c ws://localhost:8081/\nType 'bye' to exit\n");
+    printf("A websocket echo server\nTry, e.g. wscat -c ws://localhost:8081/\nType 'bye' to exit\n");
     
     event_base_loop(evbase, 0);
 
