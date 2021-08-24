@@ -23,7 +23,7 @@ mm__dup_(const void * src, size_t size)
         evhtp_bind_socket(HTP, "127.0.0.1", 9999, 128);   \
                                                        \
         if (getsockname(                               \
-                evconnlistener_get_fd(HTP->server),    \
+                evconnlistener_get_fd(HTP->servers[HTP->nservers -1]),    \
                 (struct sockaddr *)&sin, &len) == 0) { \
             port = ntohs(sin.sin_port);                \
         }                                              \

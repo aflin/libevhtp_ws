@@ -133,7 +133,7 @@ htp_worker_init_(evthr_t * thread, void * args)
     evhtp_enable_flag(htp, EVHTP_FLAG_ENABLE_ALL);
     evhtp_bind_socket(htp, "0.0.0.0", 3000, 1024);
 
-    attach_cbpf_(evconnlistener_get_fd(htp->server));
+    attach_cbpf_(evconnlistener_get_fd(htp->servers[htp->nservers-1]));
 } /* htp_worker_init_ */
 
 int

@@ -50,7 +50,7 @@ main(int argc, char ** argv) {
 
     event_base_loop(evbase, 0);
 
-    evhtp_unbind_socket(htp);
+    evhtp_unbind_sockets(htp);
     evhtp_safe_free(htp, evhtp_free);
     evhtp_safe_free(evbase, event_base_free);
 

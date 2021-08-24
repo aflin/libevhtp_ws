@@ -115,7 +115,7 @@ htp_worker_init_(evthr_t * thread, void * args)
     }
 
     evhtp_bind_socket(htp, "127.0.0.1", 8089, 1024);
-    attach_cbpf_(evconnlistener_get_fd(htp->server));
+    attach_cbpf_(evconnlistener_get_fd(htp->servers[htp->nservers -1]));
 } /* htp_worker_init_ */
 
 int
