@@ -2296,6 +2296,7 @@ check_proto:
         size_t len=evbuffer_get_length(request->buffer_out);
         if (len) {
             evbuffer_add_buffer(buf, request->buffer_out);
+#ifndef EVHTP_DISABLE_SSL
             /* a compromise for whatever bug causes the major slowdown if
                 we are using ssl and the buffer is not contiguous
                 https://github.com/criticalstack/libevhtp/issues/160
@@ -2303,6 +2304,7 @@ check_proto:
             */
             if (request->conn->htp->ssl_ctx != NULL && len <= 5242880)
                 evbuffer_pullup(buf,-1);
+#endif
         }
     }
     return buf;
